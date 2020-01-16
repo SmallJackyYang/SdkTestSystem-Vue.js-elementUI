@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>个人中心</title>
+		<link rel="stylesheet" type="text/css" href="css/index.css"/>
+		<link rel="stylesheet" type="text/css" href="css/jacky.css"/>
+		<link rel="logo icon" href="img/logo2.ico" type="image/x-icon" />
+		<!-- <script src="js/vue.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/index.js" type="text/javascript" charset="utf-8"></script>
+		<!-- <script src="js/vue-resource.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="js/vue-resource.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/setting.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div id="app" class="homeBox">
+			<el-container style="height: 100%;" direction="vertical">
+				<el-header style="text-align: left;">	
+					<el-image style="width: 25px;height: 25px;vertical-align: middle;margin-bottom: 5px;" src="img/logo3.jpg"></el-image>				
+					<span style="font-weight: bold;font-size: 120%;color: white;">数据比对系统</span>
+					<span style="margin-left: 80%;font-size: 13px;color: white;">
+					<!-- localStorage中保存的nickname，赋值到这里 -->
+					<i class="el-icon-user-solid"></i>	
+					欢迎你,{{header.nickname}}
+					</span>
+					<el-dropdown style="margin-left: 30px;">
+					  <span class="el-dropdown-link" style="color: white;">
+					    系统<i class="el-icon-arrow-down el-icon--right"></i>
+					  </span>
+					  <el-dropdown-menu slot="dropdown">
+						<!-- 这里使用@click="exitconfirm",点击之后无反馈，不知道为啥要加一个native -->
+					    <el-dropdown-item style="color: #409EFF;" @click.native="exitconfirm">安全退出</el-dropdown-item>    
+					  </el-dropdown-menu>
+					</el-dropdown>	
+				</el-header>
+				<el-container>	
+					<el-aside  width="200px" style="border-right: 2px solid #CCCCCC;">
+						<el-row class="tac">
+						  <el-col :span="24" >
+						    <el-menu default-active="2" class="el-menu-vertical-demo border" background-color="#E9EEF3">
+									<el-submenu index="1">
+										<template slot="title"><i class="el-icon-s-data"></i>数据比对</template>
+										<el-menu-item index="1-1" @click="hrefupcase">
+										    <i class="el-icon-upload" ></i>
+										    <span slot="title">用例上传</span>
+										  </el-menu-item>
+										  <el-menu-item index="1-2" @click="hreffindcase">
+										    <i class="el-icon-folder"></i>
+										    <span slot="title">用例管理</span>
+										  </el-menu-item>				
+										<el-submenu index="1-3">
+											<template slot="title"><i class="el-icon-s-data"></i>Dana数据</template>
+											<el-menu-item index="1-3-1" @click="hrefparamscheck">
+												<i class="el-icon-search"></i>
+												<span slot="title">数据查询</span>
+											</el-menu-item>
+											<el-menu-item index="1-3-2" @click="hrefgamesetting">
+												<i class="el-icon-setting" ></i>
+												<span slot="title">游戏配置</span>
+											</el-menu-item>
+										</el-submenu>
+									</el-submenu>					 
+						      <el-menu-item index="2" >
+						        <i class="el-icon-user"></i>
+						        <span slot="title">个人中心</span>
+						      </el-menu-item>
+						    </el-menu>
+						  </el-col>
+						</el-row>
+					</el-aside>
+					<el-main>			
+						  <el-card class="box-card">
+							<div slot="header" class="clearfix">
+							  <span style="color: #409EFF;font-weight: bold;">个人详情</span>
+							</div>
+							<div class="text item">
+							  {{'用户名称： ' + this.userdetail.username }}
+							</div>
+							<div class="text item">
+							  {{'真实姓名： ' + this.userdetail.nickname }}
+							</div>
+							<div class="text item">
+							  {{'创建时间： ' + this.userdetail.createtime }}
+							</div>
+							<div class="text item">
+							  用户状态：
+							  <el-tag v-if="this.userdetail.status== true" type="success">正常</el-tag>
+							  <el-tag v-else type="danger">异常</el-tag>
+							</div>
+							<div class="text item">
+							  {{'邮箱地址： ' + this.userdetail.email }}
+							</div>
+						  </el-card>
+					</el-main>	
+				</el-container>
+			</el-container>
+		</div>
+	</body>
+	<script type="text/javascript">
+	//挂载界面
+	var app = new Vue({
+		el: '#app',
+		data:{
+			header:{
+				nickname:localStorage.getItem("nickname")
+			},
+			userdetail:{
+				username:'',
+				nickname:'',
+				status:'',
+				createtime:'',
+				email:'',
+			},
+		},
+		mounted() {
+			//登录状态校验
+			if (!localStorage.getItem("uid") || !localStorage.getItem("token")){
+				this.$alert('当前处于未登录状态，请登录', '提示', {
+				  confirmButtonText: '确定',
+				  callback: action => {
+					localStorage.clear()
+					window.location.href = "./login.html"
+				  }
+				})
+			}else{
+				//处于已登录状态，则初始化执行请求，获取个人数据
+				this.getuserdetail()
+			}
+		},
+		methods:{
+			//跳转
+			hrefupcase(){
+				window.location.href='upcase.html'
+			},
+			//跳转
+			hrefparamscheck(){
+				window.location.href='paramscheck.html'
+			},
+			//跳转
+			hreffindcase(){
+				window.location.href='findcase.html'
+			},
+			hrefgamesetting(){
+				window.location.href='gamesetting.html'
+			},
+			//退出系统
+			exitconfirm() {
+				//退出系统确认
+				this.$confirm('此操作将退出当前系统, 是否继续?', '提示', {
+				  confirmButtonText: '确定',
+				  cancelButtonText: '取消',
+				  type: 'warning',
+				}).then(() => {
+					//登出请求
+					this.$http.get(oaURL+'/userservice/user/logout',
+					{params:{userId:localStorage.getItem("uid"),projectId:3},
+					headers:{'Project-Id':'3','User-id':localStorage.getItem("uid"),'Kdc-token':localStorage.getItem("token")}}
+					).then(function(res){
+						//code = 0 代表 登出成功
+						if (res.body.code == 0) {
+							//登出成功，则清楚所有locastorage存储的信息，然后跳转登录界面
+							localStorage.clear()					
+							window.location.href = "./login.html"
+							}
+					})
+				}).catch(() => {
+				  return false    
+				});
+			},
+			//获取用户信息
+			getuserdetail(){
+				this.$http.get(oaURL+'/userservice/userinfo/detail',
+				{params:{userId:localStorage.getItem("uid"),projectId:3},
+				headers:{'Project-Id':'3','User-id':localStorage.getItem("uid"),'Kdc-token':localStorage.getItem("token"),'Kdc-Refresh-Token':0}}
+				).then(function(res){
+					if (res.body.code == 0) {
+						//获取到数据后，赋值到对应的绑定上
+						this.userdetail.username = res.body.data.username
+						this.userdetail.nickname = res.body.data.nickname
+						this.userdetail.status = res.body.data.status
+						this.userdetail.email = res.body.data.email
+						this.userdetail.createtime = formatDate(res.body.data.createdAt)
+					}
+					else if(res.body.code == 211){
+						this.$alert('登录超时，请重新登录', '提示', {
+						  confirmButtonText: '确定',
+						  callback: action => {
+							localStorage.clear()
+							window.location.href = "./login.html"
+						  }
+						})	
+					}else{
+						this.$message.error(res.body);
+					}
+				})
+			}
+		}
+	})
+	</script>
+</html>

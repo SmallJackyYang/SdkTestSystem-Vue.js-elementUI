@@ -1,0 +1,314 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>用例上传</title>
+		<link rel="stylesheet" type="text/css" href="css/index.css"/>
+		<link rel="stylesheet" type="text/css" href="css/jacky.css"/>
+		<link rel="logo icon" href="img/logo2.ico" type="image/x-icon" />
+		<!-- <script src="js/vue.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/index.js" type="text/javascript" charset="utf-8"></script>
+		<!-- <script src="js/vue-resource.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="js/vue-resource.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/setting.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div id="app" class="homeBox">	
+			<el-container style="height: 100%;" direction="vertical">
+				<el-header style="text-align: left;">	
+					<el-image style="width: 25px;height: 25px;vertical-align: middle;margin-bottom: 5px;" src="img/logo3.jpg"></el-image>				
+					<span style="font-weight: bold;font-size: 120%;color: white;">数据比对系统</span>
+					<span style="margin-left: 80%;font-size: 13px;color: white;">
+					<!-- localStorage中保存的nickname，赋值到这里 -->
+					<i class="el-icon-user-solid"></i>	
+					欢迎你,{{header.nickname}}
+					</span>
+					<el-dropdown style="margin-left: 30px;">
+					  <span class="el-dropdown-link" style="color: white;">
+					    系统<i class="el-icon-arrow-down el-icon--right"></i>
+					  </span>
+					  <el-dropdown-menu slot="dropdown">
+						<!-- 这里使用@click="exitconfirm",点击之后无反馈，不知道为啥要加一个native -->
+					    <el-dropdown-item style="color: #409EFF;" @click.native="exitconfirm">安全退出</el-dropdown-item>    
+					  </el-dropdown-menu>
+					</el-dropdown>	
+				</el-header>
+				<el-container>	
+					<el-aside  width="200px" style="border-right: 2px solid #cccacb;">
+						<el-row class="tac">
+						  <el-col :span="24" >
+						    <el-menu default-active="1-1" class="el-menu-vertical-demo border" background-color="#E9EEF3" >
+									<el-submenu index="1">
+										<template slot="title"><i class="el-icon-s-data"></i>数据比对</template>
+										<el-menu-item index="1-1">
+										    <i class="el-icon-upload" ></i>
+										    <span slot="title">用例上传</span>
+										  </el-menu-item>
+										  <el-menu-item index="1-2" @click='hreffindcase'>
+										    <i class="el-icon-folder"></i>
+										    <span slot="title">用例管理</span>
+										  </el-menu-item>				
+										<el-submenu index="1-3">
+											<template slot="title"><i class="el-icon-s-data"></i>Dana数据</template>
+											<el-menu-item index="1-3-1" @click="hrefparamscheck">
+												<i class="el-icon-search" ></i>
+												<span slot="title">数据查询</span>
+											</el-menu-item>
+											<el-menu-item index="1-3-2" @click="hrefgamesetting">
+												<i class="el-icon-setting" ></i>
+												<span slot="title">游戏配置</span>
+											</el-menu-item>
+										</el-submenu>
+									</el-submenu>
+									<el-menu-item index="2" @click="hrefuser">
+									  <i class="el-icon-user"></i>
+									  <span slot="title">个人中心</span>
+									</el-menu-item>
+						    </el-menu>
+						  </el-col>
+						</el-row>
+					</el-aside>
+					<el-main>
+						<el-form ref="uploadform" :model="uploadform" :rules="rules" label-width="110px" label-position="left">
+						  <el-form-item label="用例名称" prop="casename">
+							<el-col :span="6">
+								<el-input v-model="uploadform.casename" ></el-input>
+							</el-col>
+						  </el-form-item>
+						  <el-form-item label="SDK版本号" prop="sdkname">
+							<el-col :span="6">
+								<el-input v-model="uploadform.sdkname" ></el-input>
+							</el-col>
+						  </el-form-item>
+						  <el-form-item label="设备ID" prop="didname">
+							<el-col :span="6">
+								<el-input v-model="uploadform.didname"></el-input>
+							</el-col>
+						  </el-form-item>
+						  <el-form-item label="Excel文件：" prop="datalist">
+							<el-checkbox-group v-model="uploadform.datalist"></el-checkbox-group>
+							<el-col :span="6">
+								<el-upload
+								  class="upload-demo"
+								  ref="upload"
+								  accept=".xls"
+								  action=""
+								  :limit="1"
+								  :with-credentials="true"
+								  :file-list="uploadform.datalist"
+								  :auto-upload="false"
+								  :on-change="fileChange"
+								  :http-request="httpRequest"
+								  :on-remove="fileremove"
+								  :before-remove="beforeRemove">
+								  <el-button slot="trigger" size="small" type="info">上传文件<i class="el-icon-upload el-icon--right"></i></el-button>
+								  <span style="margin-top: 0px;font-size: 12px;color: red;">只能上传xls格式的 excel文件,只能上传一个文件</span>
+								  <br>
+								  <el-button type="primary" @click="submitUpload('uploadform')" style="margin-top: 25px;">用例提交</el-button>
+								  <el-button style="margin-left: 10px;width: 82px;" @click="resetForm('uploadform')">取消</el-button>
+								  <el-button style="margin-left: 10px;" type="warning" @click="download">下载上传用例模板</el-button>
+								</el-upload>
+							</el-col>
+						  </el-form-item>	
+						</el-form>
+					</el-main>	
+				</el-container>
+			</el-container>
+		</div>
+	</body>
+	<script type="text/javascript">
+		//挂载界面
+		var app = new Vue({
+			el: '#app',
+			data:{
+				header:{
+					nickname:localStorage.getItem("nickname")
+				},
+				/*
+					上传操作数据绑定
+					datalist 上传文件，arr
+					casename 用例名称
+					sdkname  sdk版本号
+					didname  设备ID
+				*/
+				uploadform:{
+					datalist:[],
+					casename:'',
+					sdkname:'',
+					didname:'',
+				},
+				//表单校验，包含输入与是否上传文件判断
+				rules:{
+					casename:[
+						{required:true,message:'请输入用例名称',trigger:'blur' }
+					],
+					sdkname:[
+						{required:true,message:'请输入sdk版本号',trigger:'blur'}
+					],
+					didname:[
+						{required:true,message:'请输入设备ID（即did）',trigger:'blur'}
+					],
+					datalist:[
+						{type: 'array', required: true, message: '请上传一个excel文件', trigger: 'change' }
+					],
+				}
+		    },
+			mounted() {
+				//登录状态校验，没登录则退出弹出提示，到登录界面
+				if (!localStorage.getItem("uid") || !localStorage.getItem("token")){
+					this.$alert('当前处于未登录状态，请登录', '提示', {
+					  confirmButtonText: '确定',
+					  callback: action => {
+						localStorage.clear()
+						window.location.href = "./login.html"
+					  }
+					})		
+				}
+			},
+			methods:{
+				//网页跳转
+				hreffindcase(){
+					window.location.href='findcase.html'
+				},
+				//网页跳转
+				hrefgamesetting(){
+					window.location.href='gamesetting.html'
+				},
+				//网页跳转
+				hrefparamscheck(){
+					window.location.href='paramscheck.html'
+				},
+				//网页跳转
+				hrefuser(){
+					window.location.href='userdetail.html'
+				},
+				//退出系统
+				exitconfirm() {
+					//退出系统确认提示框
+					this.$confirm('此操作将退出当前系统, 是否继续?', '提示', {
+					  confirmButtonText: '确定',
+					  cancelButtonText: '取消',
+					  type: 'warning',
+					}).then(() => {
+						//点击确定后，发登出请求
+						this.$http.get(oaURL+'/userservice/user/logout',
+						{params:{userId:localStorage.getItem("uid"),projectId:3},
+						headers:{'Project-Id':'3','User-id':localStorage.getItem("uid"),'Kdc-token':localStorage.getItem("token")}}
+						).then(function(res){
+							//code = 0 代表 登出成功
+							if (res.body.code == 0) {
+								//登出成功，则清楚所有locastorage存储的信息，然后跳转登录界面
+								localStorage.clear()					
+								window.location.href = "./login.html"
+								}
+						})
+					}).catch(() => {
+					  return false    
+					});
+				},
+				//移除已上传文件提示时触发的函数
+				beforeRemove(file,fileList) {
+					return this.$confirm(`确定移除 ${ file.name }？`);
+				},
+				//移除文件触发的钩子函数,返回的修改后的列表对象
+				fileremove(file,fileList){
+					this.uploadform.datalist = fileList			
+				},
+				// fileList 是文件列表发生变化后，返回的修改后的列表对象，这里直接赋值就好啦！
+				fileChange(file, fileList) {
+				  this.uploadform.datalist = fileList
+				},
+				
+				/*自定义的httpRequest请求
+				  因为这里上传控件使用的是手动上传操作，根据官网参数，手动上传必须定义一个自定义的http-request函数，函数带有参数param
+				  该函数由upload控件的submit()函数来触发
+				*/
+				httpRequest(param){
+					//这里可以打印一下，看看传递的param参数是什么
+					let fileObj = param.file
+					//带文件上传的请求需要用到 formdata格式，将参数一一append进去
+					let formdata = new FormData()
+					formdata.append('file',fileObj)
+					formdata.append('title',this.uploadform.casename)
+					formdata.append('device_id',this.uploadform.didname)
+					formdata.append('sdk_version',this.uploadform.sdkname)			
+					//post请求
+					this.$http.post(baseURL+'/case/addcase',
+					//因为默认的content-type是 json格式，带有文件的请求方式需要用form-data格式，加上参数emulateJSON:true即可
+					formdata,{emulateJSON:true,headers:{'uid':localStorage.getItem("uid"),'token':localStorage.getItem("token")}}
+					).then(function(res){
+						if (res.body.code == 0){
+							this.$message.success('用例上传成功');
+						}else if(res.body.code == 401){
+							this.$alert('登录超时，请重新登录', '提示', {
+							  confirmButtonText: '确定',
+							  callback: action => {
+								localStorage.clear()
+								window.location.href = "./login.html"
+							  }
+							})	
+						}else{
+							this.$message.error(res.body);
+						}
+					})
+				},
+				//通过输入条件验证后，用例上传请求触发（会调用上面的upload组件里自定义的httpRequest请求）,这里要注意的就是upload组件手动上传的触发的自定义http方式
+				submitUpload(formName){
+					this.$refs[formName].validate((valid) => {
+					  if (valid) {
+						this.$refs.upload.submit();
+						}
+					  else{
+						  return false
+					  }
+					})			
+				},
+				//清空表单
+				resetForm(formName) {
+				  this.$refs[formName].resetFields()
+				},
+				//下载用例模板
+				download(){
+					var xhr = new XMLHttpRequest();
+					//GET请求,请求路径url,async(是否异步)
+					xhr.open('GET', baseURL + '/case/downloadcase?id=0', true);
+					//设置请求头参数的方式,如果没有可忽略此行代码
+					xhr.setRequestHeader("token",localStorage.getItem("token"));
+					xhr.setRequestHeader("uid",localStorage.getItem("uid"));
+					//设置响应类型为 blob
+					xhr.responseType = 'blob';
+					//关键部分
+					xhr.onload = function (e) {
+					    //如果请求执行成功
+					    if (this.status == 200) {
+					        if (this.response["type"] = 'application/octet-stream') {
+					            var blob = this.response;
+					            var filename = "用例上传模板.xls";//
+					            var a = document.createElement('a');
+					            blob.type = "application/octet-stream";
+					            //创键临时url对象
+					            var url = URL.createObjectURL(blob);
+					            a.href = url;
+					            a.download=filename;
+					            a.click();
+					            //释放之前创建的URL对象
+					            window.URL.revokeObjectURL(url);
+					        }
+					        else if(this.response["type"] = 'application/json'){
+					            alert('下载文件失败，请检查是否登录超时or未登录')
+					        }
+					    }
+					    else{
+					        alert('请求下载文件失败')
+					    }
+					};
+					//发送请求
+					xhr.send();
+				}
+			}
+		});
+	</script>
+</html>
